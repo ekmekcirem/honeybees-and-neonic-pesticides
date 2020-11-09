@@ -1,1 +1,2 @@
 # honeybees-and-neonic-pesticides
+The project data set is a combination of the data sets from The National Agricultural Statistics Service (NASS)  and The United States Geological Survey (USGS). Moreover, it is taken from Kaggle. The project aims the prediction of honey yield per colony in USA with different regression models such as Artificial Neural Network, Support Vector Machine, Random Forest, Gradient Boosting, and XGBoost. R-Studio is used for this project.

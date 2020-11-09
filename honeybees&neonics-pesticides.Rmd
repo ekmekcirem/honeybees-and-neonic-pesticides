@@ -1,0 +1,627 @@
+---
+title: "412 Project"
+author: "İrem Ekmekçi"
+output: word_document
+---
+
+```{r}
+Honey <- read.csv("~/Desktop/vHoneyNeonic_v02.csv")
+head(Honey)
+View(Honey)
+library(ggplot2)
+```
+
+```{r}
+dim(Honey)
+```
+```{r}
+str(Honey)
+```
+```{r}
+summary(Honey)
+Honey<-Honey[,-1]
+head(Honey)
+```
+
+The average amount of ACETAMIPRID applied is 729.0. The minimum amount of ACETAMIPRID applied is 0.0, while the maximum is 36480.3. The half of amount of ACETAMIPRID applied is below or above 16.0. 25% of amount of ACETAMIPRID applied is below 0.0 and above 349.1.
+
+
+#What is the frequency distribution of Region?
+```{r}
+Region=table(Honey$Region)
+barplot(Region,col=c("red","blue","yellow","green"),main="Bar Plot of Regions", ylim=c(0,350) )
+text(Region,labels=Region)
+```
+##Is there any relationship between continuous variables?
+
+```{r}
+cont_honey<-Honey[,-c(7:9)]
+library(GGally)
+ggpairs(cont_honey,title = "Scatter Matrix of the continuous variables of Honey Data Set")
+```
+
+strong positive relationships: *numcol & totalprod
+                               *numcol & stocks
+                               *numcol & prodvalue
+                               *stocks & totalprod
+                               *stocks & prodvalue
+                               *prodvalue & totalprod
+                               *prodvalue & stocks
+
+#What is the distribution of continuous variables?
+```{r}
+layout(mat = matrix(c(1,2),2,1, byrow=TRUE),  height = c(1,8))
+par(mar=c(0, 3.1, 1.1, 2.1))
+boxplot(Honey$numcol,main="Box Plot of Number of Honey Producing Colonies ",xlab="Number of Honey Producing Colonies",col="red",horizontal=TRUE,frame=F)
+par(mar=c(1, 3.1, 1.1, 2.1))
+hist(Honey$numcol,col="red",xlab="Number of Honey Producing Colonies",main="")
+```
+
+```{r}
+layout(mat = matrix(c(1,2),2,1, byrow=TRUE),  height = c(1,8))
+par(mar=c(0, 3.1, 1.1, 2.1))
+boxplot(Honey$yieldpercol,main="Box Plot of Honey Yield Per Colony ",xlab="Honey Yield Per Colony",col="blue",horizontal=TRUE,frame=F)
+par(mar=c(1, 3.1, 1.1, 2.1))
+hist(Honey$yield,col="blue",xlab="Honey Yield Per Colony",main="")
+```
+
+```{r}
+layout(mat = matrix(c(1,2),2,1, byrow=TRUE),  height = c(1,8))
+par(mar=c(0, 3.1, 1.1, 2.1))
+boxplot(Honey$totalprod,main="Box Plot of Total Production ",xlab="Total Production",col="lightseagreen",horizontal=TRUE,frame=F)
+par(mar=c(1, 3.1, 1.1, 2.1))
+hist(Honey$totalprod,col="lightseagreen",xlab="Total Production",main="")
+```
+
+```{r}
+layout(mat = matrix(c(1,2),2,1, byrow=TRUE),  height = c(1,8))
+par(mar=c(0, 3.1, 1.1, 2.1))
+boxplot(Honey$stocks,main="Box Plot of Stocks",xlab="Stocks",col="tan",horizontal=TRUE,frame=F)
+par(mar=c(1, 3.1, 1.1, 2.1))
+hist(Honey$stocks,col="tan",xlab="Stocks",main="")
+```
+
+
+
+
+#
+```{r}
+ggplot(Honey,aes(x=yieldpercol,y=priceperlb,colour=factor(StateName)))+ geom_point() +labs(title="Relationship between yieldpercolony and priceperlb by States",   xlab="totalprod", ylab="priceperlb")+theme_bw()
+```
+
+
+
+#Is there any relationship between stock and Region?
+```{r}
+boxplot(Honey$stocks~Honey$Region,main="The Boxplot of stock wrt Region",col=c("green","red","blue","yellow"))
+
+```
+## What is the relationship between stocks and all neonic for each region
+```{r}
+library(lattice)
+xyplot(Honey$stocks~ Honey$nAllNeonic| factor(Honey$Region), data=Honey, pc=20,cex=0.5)
+```
+there is a negative relationship between stocks held by producers and the amount of all Neonics applied.
+
+
+```{r}
+ggplot(Honey,aes(x=yieldpercol,y=year))+geom_point(col="red")+theme_bw()+facet_grid(Region~.)
+```
+#bubble plot
+##relationship of three numeric variables?
+```{r}
+ggplot(Honey,aes(x=totalprod,y=stocks,size=nAllNeonic,colour=nAllNeonic))+geom_point(position="jitter")+labs(title = "Relationship between Total Production and Stocks with respect to AllNeonic")+theme_bw()+scale_size(range=c(0.1,5),name = "nAllNeonic")
+```
+We can say that there is a negative relationship between yield per colony and price perlb
+
+
+#does prodvalue have normal distribution with respect to Regions?
+```{r}
+qqmath(~Honey$prodvalue | factor(Honey$Region), data=Honey, col="orange", f.value=ppoints(100),auto.key = list(columns=4),type=c("p","g"),aspect="xy")
+```
+It is seen that they do not follow normal distribution.
+
+
+#boxplots
+```{r}
+#bp with jittering
+ggplot(Honey,aes(x=reorder(Region,nAllNeonic),y=nAllNeonic))+geom_point(position = "jitter")+geom_boxplot(colour="blue",fill="yellow")+labs(title = "Relationship between Regions and The amount of all Neonics applied",x="Regions",y="all Neonics applied")+theme_bw()
+```
+#violin plots
+```{r}
+ggplot(Honey,aes(x=Region,y=prodvalue,fill=Region))+geom_violin()+geom_boxplot(width=0.1)+labs(title = "Relationship between Regions and Value of Production",x="Regions",y="Value of Production")+theme_bw()
+```
+#lollipop Chart
+```{r}
+mean_region_midwest=mean(Honey$nACETAMIPRID[Honey$Region=="Midwest"],na.rm = T)
+mean_region_northeast=mean(Honey$nACETAMIPRID[Honey$Region=="Northeast"],na.rm=T)
+mean_region_south=mean(Honey$nACETAMIPRID[Honey$Region=="South"], na.rm=T)
+mean_region_west=mean(Honey$nACETAMIPRID[Honey$Region=="West"],na.rm=T)
+ACETAMIPRID=c(mean_region_midwest,mean_region_northeast,mean_region_south,mean_region_west)
+Class=c("Midwest","Norteast","South","West")
+data=data.frame(ACETAMIPRID,Class)
+data
+ggplot(data,aes(x=Class,y=ACETAMIPRID)) +geom_point(size=5,color="blue",fill="yellow",alpha=0.7, shape=21, stroke=2) + geom_segment(aes(x=Class,xend=Class,y=0,yend=ACETAMIPRID)) + labs(title = "Lollipop Plot of Regions vs Amount of ACETAMIPRID",x="Regions",y="ACETAMIPRID")+theme_bw()
+```
+
+```{r}
+library(dplyr)
+library(stringr)
+library(lubridate)
+library(editrules)
+library(deducorrect)
+library(knitr)
+
+```
+
+
+#To a Clean Data
+##mean imputation
+```{r}
+library(mice)
+library(mi)
+sum(is.na(Honey$numcol))
+sum(is.na(Honey$yieldpercol))
+sum(is.na(Honey$totalprod))
+sum(is.na(Honey$stocks))
+sum(is.na(Honey$priceperlb))
+sum(is.na(Honey$prodvalue))
+sum(is.na(Honey$year))
+sum(is.na(Honey$StateName))
+sum(is.na(Honey$Region))
+sum(is.na(Honey$nCLOTHIANIDIN)) #there are NAs
+sum(is.na(Honey$nIMIDACLOPRID)) #there are NAs
+sum(is.na(Honey$nTHIAMETHOXAM)) #there are NAs
+sum(is.na(Honey$nACETAMIPRID)) #there are NAs
+sum(is.na(Honey$nTHIACLOPRID)) #there are NAs
+sum(is.na(Honey$nAllNeonic)) #there are NAs
+
+imp<-mice(Honey,method = "mean", m=1, maxit=1)
+imp
+imp$imp$nCLOTHIANIDIN
+imp$imp$nIMIDACLOPRID
+imp$imp$nTHIAMETHOXAM
+imp$imp$nACETAMIPRID
+imp$imp$nTHIACLOPRID
+imp$imp$nAllNeonic
+```
+##Multiple Imputation Analysis
+```{r}
+library(missForest)
+library(Hmisc)
+library(mice)
+library(VIM)
+```
+
+```{r}
+md.pattern(Honey)
+library(VIM)
+mice_plot <- aggr(Honey, col=c('red','yellow'),
+                    numbers=TRUE, sortVars=TRUE,
+                    labels=names(Honey), cex.axis=.7,
+                    gap=3, ylab=c("Missing data","Pattern"))
+#it is better if you increase your iteration number
+imputed_Data <- mice(Honey, m=1, maxit=500, method='cart', seed=500)
+summary(imputed_Data)
+imputed_Data$imp$nCLOTHIANIDIN
+imputed_Data$imp$nIMIDACLOPRID
+imputed_Data$imp$nTHIAMETHOXAM
+imputed_Data$imp$nACETAMIPRID
+imputed_Data$imp$nTHIACLOPRID
+imputed_Data$imp$nAllNeonic
+complete_data<-mice::complete(imputed_Data,1)
+summary(complete_data)
+
+write.csv(complete_data,"complete.csv")
+```
+```{r}
+complete <- read.csv("~/Desktop/complete.csv")
+head(complete)
+complete<-complete[,-1]
+head(complete)
+```
+
+
+#Step 4:For each of your research, choose the most appropriate and fancy numerical and/or graphical methods to get some answers, and also conduct statistical tests (simple hypothesis tests, ANOVA, tests for independence of categorical, if assumptions not satisfied, conduct nonparametric tests, etc.).
+
+##RQ: Is the average stocks is greater than 60000 or not?
+H0: The mean value of stocks is less than or equal to 60000.
+H1: The mean value of stocks is greater than 60000.
+_Method 1: One Sample t-test_
+Assumptions
+Data points should be independent from each other.
+Data should be normally distributed.
+Data should be randomly selected from a population, where each item has an equal chance of being selected.
+```{r}
+shapiro.test(complete$stocks)
+t.test(complete$stocks,alternative = "greater",mu=60000)
+```
+_Method 2: Sign Test_
+```{r}
+library("BSDA")
+SIGN.test(complete$stocks,md=60000,alt="greater")
+```
+
+##RQ: Is the average price per pound the same for all regions?
+H0:µ1=µ2=µ3=µ4
+H1: At least one of them is different 
+_Method 1: One-Way ANOVA_
+Assumptions
+Independent samples 
+Normally distributed response
+Homogeneity of variances across responses for the groups
+```{r}
+boxplot(complete$priceperlb~complete$Region,main="The Box Plot of Price Per Pound with respect to Regions",xlab = "Regions",ylab = "Price Per Pound",col=c("red","slateblue","lightcoral","forestgreen"))
+```
+It is seen that the average values of the price per pound of each region represented by the median are different for each case.
+Let’s start with checking assumption of One-Way ANOVA.
+Normality assumption
+Normality is checked for each sample with Shapiro-Wilk normality test.
+```{r}
+shapiro.test(complete$priceperlb[complete$Region=="Midwest"])
+shapiro.test(complete$priceperlb[complete$Region=="Northeast"])
+shapiro.test(complete$priceperlb[complete$Region=="South"])
+shapiro.test(complete$priceperlb[complete$Region=="West"])
+```
+According to the results of Shapiro-Wilk test above, none of the sample are normally distributed.
+Homogeneity of variances
+H0: All populations have equal variances.
+H1: At least one of them has different variance.
+```{r}
+bartlett.test(priceperlb~Region,data=complete)
+```
+We can reject the null hypothesis since p-value is less than 0.05. This means that we are 95% confident that at least one of the populations has different variance.
+Since normality and homogeneity of variances assumption could not checked, One-Way ANOVA cannot be conducted.
+However, if the assumptions were checked, it would be conducted like this;
+```{r}
+fit<-aov(priceperlb~Region,data=complete)
+summary(fit)
+```
+
+_Method 2: Kruskal-Wallis Test_
+Since the populations are independent from each other, without assuming normality and equality of variances, the populations can be compared with Kruskal-Wallis Test. Kruskal-Wallis test is nonparametric version of the One-Way ANOVA.
+```{r}
+library(onewaytests)
+kw.test(priceperlb~Region,data=complete)
+```
+
+```{r}
+t<-table(complete$StateName,complete$Region)
+t
+margin.table(t,1)
+margin.table(t,2)
+```
+
+##Chi-Square Statistics
+H0: State names and regions are independent
+H1: State names and regions are not independent
+
+```{r}
+chisq.test(t)
+```
+Since p value less than α, we reject H0. Therefore, we are 95% confident that there is a significant relation between State names and Regions as expected..
+
+##Cramer's V
+```{r}
+library(vcd)
+assocstats(t)
+```
+Since Cramer's V equals to 1, we can say that each variable is completely determined by the other.
+
+#Step 5: For a regression problem, check the distribution of the response variable. If it is not normally distributed, apply proper transformation.  Then, examine the matrix scatter plot to see the linearity of the relationship between response and explanatory variables. If there are non-linear relationships, apply transformation on explanatory variables
+
+
+```{r}
+shapiro.test(complete$yieldpercol) 
+```
+The response variable is not normally distributed therefore a transformation should be applied for the response variable.
+
+
+```{r}
+##Tukey Ladder of Power Transformation
+library(rcompanion)
+plotNormalHistogram(complete$yieldpercol)
+T_tuk = transformTukey(complete$yieldpercol,plotit=FALSE)
+plotNormalHistogram(T_tuk)
+shapiro.test(T_tuk)
+shapiro.test(complete$yieldpercol^0.1)
+```
+
+
+```{r}
+conthoney<-complete[,-c(7:9)]
+cont_honey$yieldpercol<-cont_honey$yieldpercol^0.1
+library(GGally)
+ggpairs(conthoney,title = "Scatter Matrix of the continuous variables of Complete Honey Data Set")
+```
+The relations between yieldpercol & numcol
+                                 & totalprod
+                                 & stocks
+                                 & priceperlb
+                                 & prodvalue
+                                 & nACETAMIPRID
+                                 & nTHIACLOPRID
+are important.
+```{r}
+data<-complete[,-c(7,8,10:12,15)]
+head(data)
+```
+
+
+
+##one_hot() from mltools
+```{r}
+library(mltools)
+library(data.table)
+newdata <- one_hot(as.data.table(data))
+head(newdata)
+```
+
+```{r}
+new<-complete
+new$Region<-unclass(new$Region)
+new$StateName<-unclass(new$StateName)
+str(new)
+new$Region<-as.factor(new$Region)
+new$StateName<-as.factor(new$StateName)
+str(new)
+```
+
+```{r}
+# Split the data into training and test set
+library(caret)
+library(dplyr)
+set.seed(123)
+training.samples <- new$yieldpercol %>%
+  createDataPartition(p = 0.8, list = FALSE) #createDataPartition helps you define train set index
+train<- new[training.samples, ]
+test<- new[-training.samples, ]
+```
+##ev
+```{r}
+# Split the data into training and test set
+set.seed(123)
+training.samples <- newdata$yieldpercol %>%
+  createDataPartition(p = 0.8, list = FALSE) #createDataPartition helps you define train set index
+train.data  <- newdata[training.samples, ]
+test.data <- newdata[-training.samples, ]
+```
+
+##Multiple Linear regression
+
+```{r}
+fit1<-lm((yieldpercol^0.1)~numcol+totalprod+stocks+priceperlb+prodvalue+nACETAMIPRID+nTHIACLOPRID+Region,data = train)
+summary(fit1)
+library(car)
+vif(fit1)
+#numcol and totalprod cause multicollinearity since vif values are higher than 10
+library(olsrr)
+ols_step_forward_p(fit1)
+
+
+fit2<-lm(yieldpercol^0.1~numcol+ priceperlb+ prodvalue+ Region+ nACETAMIPRID,data=train)
+summary(fit2)
+vif(fit2) #multicollinearity still exists. since totalprod=numcol*yieldpercol, i omitted totalprod
+fit3<-lm(yieldpercol^0.1~numcol+ priceperlb+ prodvalue+ Region+ nACETAMIPRID,data=train)
+summary(fit3)
+vif(fit3)#multicollinearity is solved
+```
+
+```{r}
+#train
+predictions <- fit3 %>% predict(train)
+predictions
+data.frame( R2 = R2(predictions, train$yieldpercol^0.1),
+            RMSE = RMSE(predictions, train$yieldpercol^0.1),
+            MAE = MAE(predictions, train$yieldpercol^0.1))
+plot(predictions,train$yieldpercol^0.1,
+     pch=18, 
+     col="#69b3a2",xlab="predictions",ylab="actuals")
+
+#test
+predictions <- fit3 %>% predict(test)
+predictions
+data.frame( R2 = R2(predictions, test$yieldpercol^0.1),
+            RMSE = RMSE(predictions, test$yieldpercol^0.1),
+            MAE = MAE(predictions, test$yieldpercol^0.1))
+
+
+```
+
+
+
+##ANN
+
+```{r}
+library(dplyr)
+scale01 <- function(x){
+  (x - min(x)) / (max(x) - min(x))
+}
+train_nn <- train %>%
+  mutate(numcol= scale01(numcol), 
+         yieldpercol = scale01(yieldpercol^0.1),
+         totalprod=scale01(totalprod),
+         stocks=scale01(stocks),
+         prodvalue=scale01(prodvalue),
+         year=year,
+         StateName=as.numeric(StateName),
+         Region = as.numeric(Region),
+         nCLOTHIANIDIN=scale01(nCLOTHIANIDIN),
+         nIMIDACLOPRID=scale01(nIMIDACLOPRID),
+         nTHIAMETHOXAM=scale01(nTHIAMETHOXAM),
+         nACETAMIPRID=scale01(nACETAMIPRID),
+         nTHIACLOPRID=scale01(nTHIACLOPRID),
+         nAllNeonic=scale01(nAllNeonic))
+
+test_nn <- test %>%
+  mutate(numcol= scale01(numcol), 
+         yieldpercol = scale01(yieldpercol^0.1),
+         totalprod=scale01(totalprod),
+         stocks=scale01(stocks),
+         prodvalue=scale01(prodvalue),
+         year=year,
+         StateName=as.numeric(StateName),
+         Region = as.numeric(Region),
+         nCLOTHIANIDIN=scale01(nCLOTHIANIDIN),
+         nIMIDACLOPRID=scale01(nIMIDACLOPRID),
+         nTHIAMETHOXAM=scale01(nTHIAMETHOXAM),
+         nACETAMIPRID=scale01(nACETAMIPRID),
+         nTHIACLOPRID=scale01(nTHIACLOPRID),
+         nAllNeonic=scale01(nAllNeonic))
+library(neuralnet)
+set.seed(123)
+fit_nn <- neuralnet(yieldpercol ~ numcol+ priceperlb+ prodvalue+ Region+ nACETAMIPRID , data =train_nn, linear.output = FALSE, hidden = c(4, 2), likelihood = TRUE)
+plot(fit_nn, rep = 'best')
+```
+You can see the details about the NN model having 2 layers, 4 and 2 neurons, respectively.
+```{r}
+#train
+predictions <- fit_nn %>% predict(train_nn)
+predictions
+data.frame( R2 = R2(predictions, train_nn$yieldpercol),
+            RMSE = RMSE(predictions, train_nn$yieldpercol),
+            MAE = MAE(predictions, train_nn$yieldpercol))
+plot(predictions,train_nn$yieldpercol,
+     pch=18, 
+     col="#69b3a2",xlab="predictions",ylab="actuals")
+#test
+predictions <- fit_nn %>% predict(test_nn)
+predictions
+data.frame( R2 = R2(predictions, test_nn$yieldpercol),
+            RMSE = RMSE(predictions, test$yieldpercol),
+            MAE = MAE(predictions, test$yieldpercol))
+
+```
+
+##Support Vector Machine
+```{r}
+library(e1071)
+tuned <- tune.svm(yieldpercol^0.1 ~ numcol+ priceperlb+ prodvalue+ Region+ nACETAMIPRID, data = train, cost = 10^(1:2),gamma = 10^(-6:-1))
+tuned
+fit_svm <- svm(yieldpercol^0.1 ~ numcol+ priceperlb+ prodvalue+ Region+ nACETAMIPRID, data = train,cost = 100, gamma = 0.1, scale = FALSE)
+fit_svm
+
+
+plot(fit_svm, train)
+```
+
+```{r}
+#train
+predictions <- fit_svm %>% predict(train)
+predictions
+data.frame( R2 = R2(predictions, train$yieldpercol^0.1),
+            RMSE = RMSE(predictions, train$yieldpercol^0.1),
+            MAE = MAE(predictions, train$yieldpercol^0.1))
+plot(predictions,train$yieldpercol^0.1,
+     pch=18, 
+     col="#69b3a2",xlab="predictions",ylab="actuals")
+#test
+predictions <- fit_svm %>% predict(test)
+predictions
+data.frame( R2 = R2(predictions, test$yieldpercol^0.1),
+            RMSE = RMSE(predictions, test$yieldpercol^0.1),
+            MAE = MAE(predictions, test$yieldpercol^0.1))
+```
+
+
+
+
+
+##Random Forest
+```{r}
+library(randomForest)
+fit_rf<-randomForest(yieldpercol^0.1 ~ numcol+ priceperlb+ prodvalue+ Region+ nACETAMIPRID,data=train)
+fit_rf
+plot(fit_rf)
+```
+
+```{r}
+# number of trees with lowest MSE
+which.min(fit_rf$mse)
+```
+```{r}
+# RMSE of this optimal random forest
+sqrt(fit_rf$mse[which.min(fit_rf$mse)])
+```
+```{r}
+#train
+predictions <- fit_rf %>% predict(train)
+predictions
+data.frame( R2 = R2(predictions, train$yieldpercol^0.1),
+            RMSE = RMSE(predictions, train$yieldpercol^0.1),
+            MAE = MAE(predictions, train$yieldpercol^0.1))
+plot(predictions,train$yieldpercol^0.1,
+     pch=18, 
+     col="#69b3a2",xlab="predictions",ylab="actuals")
+#test
+predictions <- fit_rf %>% predict(test)
+predictions
+data.frame( R2 = R2(predictions, test$yieldpercol^0.1),
+            RMSE = RMSE(predictions, test$yieldpercol^0.1),
+            MAE = MAE(predictions, test$yieldpercol^0.1))
+```
+##GBM and XGBoost
+```{r}
+##GBM
+# Train model with preprocessing & repeated cv
+
+model_gbm <- caret::train(yieldpercol^0.1 ~ numcol+ priceperlb+ prodvalue+ Region+ nACETAMIPRID,data = train,method = "gbm",trControl = trainControl(method = "repeatedcv", 
+number = 5,  repeats = 3, verboseIter = FALSE),verbose = 0)
+model_gbm
+```
+
+```{r}
+#train
+predictions <- model_gbm %>% predict(train)
+predictions
+data.frame( R2 = R2(predictions, train$yieldpercol^0.1),
+            RMSE = RMSE(predictions, train$yieldpercol^0.1),
+            MAE = MAE(predictions, train$yieldpercol^0.1))
+plot(predictions,train$yieldpercol^0.1,
+     pch=18, 
+     col="#69b3a2",xlab="predictions",ylab="actuals")
+#test
+predictions <- model_gbm %>% predict(test)
+predictions
+data.frame( R2 = R2(predictions, test$yieldpercol^0.1),
+            RMSE = RMSE(predictions, test$yieldpercol^0.1),
+            MAE = MAE(predictions, test$yieldpercol^0.1))
+```
+
+```{r}
+##XGBoost from caret package
+library(caret)
+xgb_caret<- train(yieldpercol^0.1 ~ numcol+ priceperlb+ prodvalue+ Region+ nACETAMIPRID,data = train, method = "xgbTree",trControl = trainControl(method = "repeatedcv", 
+number = 2,  repeats = 1, verboseIter = FALSE),verbose = 0)
+xgb_caret
+
+```
+
+```{r}
+#train
+predictions <- xgb_caret %>% predict(train)
+predictions
+data.frame( R2 = R2(predictions, train$yieldpercol^0.1),
+            RMSE = RMSE(predictions, train$yieldpercol^0.1),
+            MAE = MAE(predictions, train$yieldpercol^0.1))
+plot(predictions,train$yieldpercol^0.1,
+     pch=18, 
+     col="#69b3a2",xlab="predictions",ylab="actuals")
+#test
+predictions <- xgb_caret %>% predict(test)
+predictions
+data.frame( R2 = R2(predictions, test$yieldpercol^0.1),
+            RMSE = RMSE(predictions, test$yieldpercol^0.1),
+            MAE = MAE(predictions, test$yieldpercol^0.1))
+```
+
+```{r}
+corr<-complete[,c(1,2,5,6,13)]
+corr$yieldpercol=corr$yieldpercol^0.1
+Corrtable<-cor(corr)
+Corrtable
+library(corrplot)
+corrplot(Corrtable)
+```
+
+
